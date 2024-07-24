@@ -1,0 +1,59 @@
+name: Check Pull Request
+on: 
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  check-pr-naming-convention:
+  
+    permissions:
+      contents: read
+      pull-requests: write
+      
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v2
+    
+      - name: Check if the PR complies with the naming convention for branches
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          branch_name=${GITHUB_HEAD_REF}
+          echo "pr branch name: $branch_name"
+          
+          target_branch=${GITHUB_BASE_REF}
+          echo "target branch: $target_branch"
+          dev_regex="^(feature|fix)/[A-Za-z0-9]+.*$|^(main)$"
+          main_regex="^(release|hotfix)/[A-Za-z0-9]+.*$"
+
+          echo -e "## Validación de branch names\n\n🚀 Rama del PR: $branch_name\n\n🎯 Rama objetivo: $target_branch\n\nℹ️ El branch origen $branch_name no cumple con el naming convention acordado para hacer un PR a $target_branch" > msgError
+          echo -e "## Validación de branch names\n\n🚀 Rama del PR: $branch_name\n\n🎯 Rama objetivo: $target_branch\n\nℹ️ Pasate la validación de naming convention acordado para hacer un PR a $target_branch desde el branch origen $branch_name" > msgOk
+          export msgError=$(cat msgError)
+          export msgOk=$(cat msgOk)
+          
+          if [[ "$branch_name" =~ $dev_regex ]]; then
+            echo "Branch name matches the develop regex pattern."
+            if [[ "$target_branch" != "develop" ]]; then
+              echo "but doesn't match target branch"
+              gh pr comment ${{ github.event.pull_request.number }} --body "$msgError"
+              exit 1
+            fi
+          elif [[ "$branch_name" =~ $main_regex ]]; then
+            echo "Branch name matches the main regex pattern."
+            if [[ "$target_branch" != "main" ]]; then
+              echo "but doesn't match target branch"
+              gh pr comment ${{ github.event.pull_request.number }} --body "$msgError"
+              exit 1
+            fi
+          else
+            echo "Branch name does not match any regex. Exiting..."
+            gh pr comment ${{ github.event.pull_request.number }} --body "$msgError"
+            exit 1
+          fi
+          gh pr comment ${{ github.event.pull_request.number }} --body "$msgOk"
+
+        shell: bash

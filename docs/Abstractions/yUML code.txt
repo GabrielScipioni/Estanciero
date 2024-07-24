@@ -1,0 +1,25 @@
+[Player]^[User],[Player]^[Bot],[Board]++->[Square],[Board],[Board]->[Dice],[Board]->[User],[Board]1-1..4[Bot],[Square]->[Player],[Square]^[Property],[Square]^[Tax],[Square]^[Train],[Square]^[Deck],
+[Square]^[Company]
+
+[Bot]-[note: Each difficulty is assigned via diferent construction methods overloads]
+//-[note:]
+[Bot]-[note: Strategy Design Pattern]
+[Board]-[note: Memento Design Pattern]
+[Dice]-[note: Singleton Design Pattern]
+[Player]-[note: Template Design Pattern]
+
+[Player]-[note: Interface List<>(ArrayList<>)]
+[Deck]-[note: Interface List<>(Stack<>)]
+[Square]-[note: Interface Map<>(HashMap<>)]
+
+[Player|-money;-turn;-balance;-position;-onJail;-getOutCards;-bankrupt|+bankruptCheck();+tradePlayer();+buy();+upgrade()],
+[Bot|override +tradePlayer();override +upgrade();],
+[User|+optionMenu();override +tradePlayer();+auction();+mortgage();+skipTurn();+useGetOutCard();],
+[Board|-ArrayList(Player);-Stack(Deck);Map(id,Square)|+defineTurns();+checkWinner();+autoSave()],
+[Square|-description;-price|+event();],
+[Deck|override +event();+getCard(luck/destiny);+shuffle();putBack()],
+[Dice|+checkDouble();+throw();+move()]
+[Tax|override +event();+calculateTax()]
+[Train|override +event();]
+[Property|override +event();]
+[Company|override +event();]
